@@ -438,6 +438,12 @@ function DiffEqBase.__init(
 
   if _prob isa JumpProblem && _prob.regular_jump !== nothing
 
+    # should this actually require is_leaping_alg(alg) to be true too?
+    if is_leaping_alg(alg)   
+        uses_regjumps(alg) || 
+            error("Algorithm $(alg) does not support RegularJumps, please choose another method.")
+    end
+
     if !isnothing(_prob.regular_jump.mark_dist) == nothing # https://github.com/JuliaDiffEq/DifferentialEquations.jl/issues/250
       error("Mark distributions are currently not supported in SimpleTauLeaping")
     end
@@ -471,7 +477,16 @@ function DiffEqBase.__init(
 
   dW,dZ = isnothing(W) ? (nothing,nothing) : (W.dW,W.dZ)
 
-  cache = alg_cache(alg,prob,u,dW,dZ,p,rate_prototype,noise_rate_prototype,jump_prototype,uEltypeNoUnits,uBottomEltypeNoUnits,tTypeNoUnits,uprev,f,t,dt,Val{isinplace(_prob)})
+  # methods that timestep individual jumps need the JumpProblem to get them
+  if _prob isa JumpProblem && uses_splitjumps(alg)
+    cache = alg_cache(alg, prob, u, dW, dZ, p, rate_prototype, noise_rate_prototype, 
+                jump_prototype, uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits, uprev,
+                f, t, dt, Val{isinplace(_prob)}, _prob)
+  else
+    cache = alg_cache(alg, prob, u, dW, dZ, p, rate_prototype, noise_rate_prototype, 
+                jump_prototype, uEltypeNoUnits, uBottomEltypeNoUnits, tTypeNoUnits, uprev,
+                f, t, dt, Val{isinplace(_prob)})
+  end
 
   if _prob isa JumpProblem && prob isa DiscreteProblem && prob isa Integer
     id = DiffEqBase.ConstantInterpolation(ts,timeseries)

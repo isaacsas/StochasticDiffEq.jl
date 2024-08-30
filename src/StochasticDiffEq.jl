@@ -83,6 +83,9 @@ end
   import JumpProcesses
   import JumpProcesses: JumpProblem
 
+  using FunctionWrappers
+  import PoissonRandom
+
   import Base.Threads
   @static if VERSION < v"1.3"
     seed_multiplier() = Threads.threadid()

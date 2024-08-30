@@ -379,6 +379,8 @@ uses_regjumps(alg::Union{TauLeaping,CaoTauLeaping}) = true
 uses_regjumps(alg::SplitTauLeaping) = true
 
 # true for methods that can timestep non-RegularJumps _themselves_
+# note this requires a modified definition for alg_cache when true, which takes 
+# a JumpProblem as an additional final argument.
 uses_splitjumps(alg::Union{AbstractSDEAlgorithm,AbstractRODEAlgorithm}) = false
 uses_splitjumps(alg::Union{TauLeaping,CaoTauLeaping}) = false
 uses_splitjumps(alg::SplitTauLeaping) = true

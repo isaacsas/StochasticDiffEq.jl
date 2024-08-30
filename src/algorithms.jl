@@ -836,6 +836,7 @@ SKenCarp(;chunk_size=0,autodiff=true,diff_type=Val{:central},
 
 struct TauLeaping <: StochasticDiffEqJumpAdaptiveAlgorithm end
 struct CaoTauLeaping <: StochasticDiffEqJumpAdaptiveAlgorithm end
+struct SplitTauLeaping <: StochasticDiffEqJumpAlgorithm end
 
 ################################################################################
 

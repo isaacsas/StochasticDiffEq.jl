@@ -168,7 +168,7 @@ end
   export ImplicitEM, ImplicitEulerHeun, ISSEM, ISSEulerHeun,
          ImplicitRKMil, STrapezoid, SImplicitMidpoint
 
-  export TauLeaping, CaoTauLeaping
+  export TauLeaping, CaoTauLeaping, SplitTauLeaping
 
   export BAOAB
 

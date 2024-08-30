@@ -30,7 +30,7 @@ qsteady_min_default(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlg
 qsteady_max_default(alg::Union{StochasticDiffEqAlgorithm,StochasticDiffEqRODEAlgorithm}) = 1
 
 # special cases in stepsize_controllers.jl
-function default_controller(alg::Union{TauLeaping,CaoTauLeaping}, args...)
+function default_controller(alg::Union{TauLeaping,CaoTauLeaping,SplitTauLeaping}, args...)
     DummyController()
 end
 
@@ -120,6 +120,7 @@ alg_order(alg::SMEB) = 1 // 1
 
 alg_order(alg::TauLeaping) = 1 // 1
 alg_order(alg::CaoTauLeaping) = 1 // 1
+alg_order(alg::SplitTauLeaping) = 1 // 1
 
 alg_order(alg::BAOAB) = 1 // 1
 
@@ -362,5 +363,22 @@ function OrdinaryDiffEq.unwrap_alg(integrator::SDEIntegrator, is_stiff)
     end
 end
 
+##################### tau-leaping alg utils ####################
+
 alg_control_rate(::StochasticDiffEqAlgorithm) = false
 alg_control_rate(::TauLeaping) = true
+alg_control_rate(::SplitTauLeaping) = true
+
+# true for methods that handle timestepping jumps _themselves_
+is_leaping_alg(alg::Union{AbstractSDEAlgorithm,AbstractRODEAlgorithm}) = false
+is_leaping_alg(alg::Union{StochasticDiffEqJumpNewtonAdaptiveAlgorithm,StochasticDiffEqJumpAlgorithm}) = true
+
+# true for methods that can timestep RegularJumps _themselves_
+uses_regjumps(alg::Union{AbstractSDEAlgorithm,AbstractRODEAlgorithm}) = false
+uses_regjumps(alg::Union{TauLeaping,CaoTauLeaping}) = true
+uses_regjumps(alg::SplitTauLeaping) = true
+
+# true for methods that can timestep non-RegularJumps _themselves_
+uses_splitjumps(alg::Union{AbstractSDEAlgorithm,AbstractRODEAlgorithm}) = false
+uses_splitjumps(alg::Union{TauLeaping,CaoTauLeaping}) = false
+uses_splitjumps(alg::SplitTauLeaping) = true

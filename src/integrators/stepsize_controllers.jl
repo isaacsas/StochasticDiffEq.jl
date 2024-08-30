@@ -43,3 +43,16 @@ end
 function step_reject_controller!(integrator::SDEIntegrator, alg::CaoTauLeaping)
     error("CaoTauLeaping should never reject steps")
 end
+
+
+function stepsize_controller!(integrator::SDEIntegrator, alg::SplitTauLeaping)
+    nothing
+end
+
+function step_accept_controller!(integrator::SDEIntegrator, alg::SplitTauLeaping)
+    return integrator.EEst # use EEst for the τ
+end
+
+function step_reject_controller!(integrator::SDEIntegrator, alg::SplitTauLeaping)
+    error("SplitTauLeaping should never reject steps")
+end

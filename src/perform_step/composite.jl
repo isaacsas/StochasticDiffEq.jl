@@ -3,7 +3,7 @@
   if cache.current == 1
     initialize!(integrator, @inbounds(cache.caches[1]))
   elseif cache.current == 2
-    initialize!(integrator, @inbounds(cache.caches[2]))
+    (integrator, @inbounds(cache.caches[2]))
   else
     initialize!(integrator, @inbounds(cache.caches[cache.current]))
   end

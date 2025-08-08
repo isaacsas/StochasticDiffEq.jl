@@ -373,12 +373,7 @@ alg_control_rate(::SplitTauLeaping) = true
 is_leaping_alg(alg::Union{AbstractSDEAlgorithm,AbstractRODEAlgorithm}) = false
 is_leaping_alg(alg::Union{StochasticDiffEqJumpNewtonAdaptiveAlgorithm,StochasticDiffEqJumpAlgorithm}) = true
 
-# true for methods that can timestep RegularJumps _themselves_
-uses_regjumps(alg::Union{AbstractSDEAlgorithm,AbstractRODEAlgorithm}) = false
-uses_regjumps(alg::Union{TauLeaping,CaoTauLeaping}) = true
-uses_regjumps(alg::SplitTauLeaping) = true
-
-# true for methods that can timestep non-RegularJumps _themselves_
+# true for methods that can timestep RegularJumps with rates and affects! _themselves_
 # note this requires a modified definition for alg_cache when true, which takes 
 # a JumpProblem as an additional final argument.
 uses_splitjumps(alg::Union{AbstractSDEAlgorithm,AbstractRODEAlgorithm}) = false

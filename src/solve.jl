@@ -438,12 +438,6 @@ function DiffEqBase.__init(
 
   if _prob isa JumpProblem && _prob.regular_jump !== nothing
 
-    # should this actually require is_leaping_alg(alg) to be true too?
-    if is_leaping_alg(alg)   
-        uses_regjumps(alg) || 
-            error("Algorithm $(alg) does not support RegularJumps, please choose another method.")
-    end
-
     if !isnothing(_prob.regular_jump.mark_dist) == nothing # https://github.com/JuliaDiffEq/DifferentialEquations.jl/issues/250
       error("Mark distributions are currently not supported in SimpleTauLeaping")
     end

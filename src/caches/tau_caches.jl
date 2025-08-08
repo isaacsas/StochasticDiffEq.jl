@@ -41,14 +41,14 @@ function alg_cache(alg::CaoTauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
 end
 
 
-@cache struct SplitTauLeapingCache{uType, tinvType, majType, ratefunType, 
-        affectfunType, rngType} <: StochasticDiffEqMutableCache
+@cache struct SplitTauLeapingCache{uType, majType, ratefunCollectType, 
+        affectfunCollectType, rngType} <: StochasticDiffEqMutableCache
     u::uType
     uprev::uType
     tmp::uType
     majumps::majType
-    ratefuns::ratefunType
-    affects!::Any
+    ratefuns::ratefunCollectType
+    affects!::affectfunCollectType
     rng::rngType
 end
 
@@ -63,21 +63,29 @@ end
 
 # note this should ultimately go in JumpProcesses as an API function, 
 # this is temporary here while testing
-function get_unpacked_jumps(jprob)
+function get_unpacked_jumps(jprob, u::utype, p::ptype, t::ttype) where {utype, ptype, ttype}
     maj = jprob.massaction_jump
 
+    RateType = FunctionWrappers.FunctionWrapper{ttype, Tuple{utype, ptype, ttype}}
+    AffectType = FunctionWrappers.FunctionWrapper{Nothing, Tuple{utype, ptype, ttype, Int}}
+   
     # ConstantRateJumps
-    rates = jprob.discrete_jump_aggregation.rates
-    affects! = jprob.discrete_jump_aggregation.affects!
+    crjs = jprob.constant_jumps
+    if !isempty(crjs)
+        rates = RateType[RateType(crj.rate) for crj in crjs]
+        affects! = AffectType[AffectType((u,p,t,c) -> (crj.affect!(u,p,t,c); nothing)) for crj in crjs]
+    else
+        rates = RateType[]
+        affects! = AffectType[]
+    end
     
     # VariableRateJumps -- these are not yet FunctionWrapped
-    vrjs = jprob.variables_jumps
+    vrjs = jprob.variable_jumps
     if !isempty(vrjs)
-        RateWrapper = eltype(rates)
-        vrjrates = RateWrapper[RateWrapper(vrj.rate) for vrj in vrjs]
-        vrjaffects = Any[(x -> (vrj.affect!(x); nothing)) for vrj in vrjs]
+        vrjrates = RateType[RateType(vrj.rate) for vrj in vrjs]
         append!(rates, vrjrates)
-        append!(affects!, vrjaffects)
+        vrjaffects! = AffectType[AffectType((u,p,t,c) -> (vrj.affect!(u,p,t,c); nothing)) for vrj in vrjs]
+        append!(affects!, vrjaffects!)
     end
 
     maj, rates, affects!
@@ -89,6 +97,7 @@ function alg_cache(alg::SplitTauLeaping, prob, u, ΔW, ΔZ, p, rate_prototype,
         ::Type{Val{true}}, jprob::JumpProblem) where {uEltypeNoUnits, 
         uBottomEltypeNoUnits, tTypeNoUnits}
     tmp = zero(u)    
-    maj, rates, affects! = get_unpacked_jumps(jprob)
-    SplitTauLeapingCache(u, uprev, tmp, maj, rates, affects!, jprob.rng)
+    maj, rates, affects! = get_unpacked_jumps(jprob, u, p, t)
+    SplitTauLeapingCache{typeof(u),typeof(maj),typeof(rates),typeof(affects!),
+        typeof(jprob.rng)}(u, uprev, tmp, maj, rates, affects!, jprob.rng)
 end

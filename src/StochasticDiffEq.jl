@@ -82,6 +82,7 @@ end
 
   import JumpProcesses
   import JumpProcesses: JumpProblem
+  using JumpProcesses: get_num_majumps, evalrxrate, executerx!
 
   using FunctionWrappers
   import PoissonRandom
